@@ -30,7 +30,21 @@ Return ONLY valid JSON:
 }
 No explanation, no markdown.
 `;
+const KEYWORD_GAP_SYSTEM_PROMPT = `
+You are an ATS keyword gap analyzer.
+Given resumeData and jdData JSON, identify:
+- missingKeywords: must-have JD skills absent from resume
+- weakKeywords: skills mentioned in resume but not emphasized/quantified
 
-module.exports = { ATS_SYSTEM_PROMPT, MATCH_SCORE_SYSTEM_PROMPT };
+Return ONLY valid JSON:
+{
+  "missingKeywords": string[],
+  "weakKeywords": string[]
+}
+`;
 
-module.exports = { ATS_SYSTEM_PROMPT };
+module.exports = {
+  ATS_SYSTEM_PROMPT,
+  MATCH_SCORE_SYSTEM_PROMPT,
+  KEYWORD_GAP_SYSTEM_PROMPT,
+};
