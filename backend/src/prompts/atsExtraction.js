@@ -15,5 +15,22 @@ Return ONLY valid JSON in this shape:
 }
 No explanation, no markdown, no extra text.
 `;
+const MATCH_SCORE_SYSTEM_PROMPT = `
+You are an ATS match scoring engine.
+Given extracted resume data and job description data (as JSON), compute a match score.
+
+Return ONLY valid JSON:
+{
+  "matchScore": number, // 0-100, weighted by must-have skills > nice-to-have > experience relevance
+  "scoreBreakdown": {
+    "skillsMatch": number,
+    "experienceMatch": number,
+    "educationMatch": number
+  }
+}
+No explanation, no markdown.
+`;
+
+module.exports = { ATS_SYSTEM_PROMPT, MATCH_SCORE_SYSTEM_PROMPT };
 
 module.exports = { ATS_SYSTEM_PROMPT };
