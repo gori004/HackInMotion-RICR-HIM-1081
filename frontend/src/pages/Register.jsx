@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import Card, { CardHeader } from "../components/ui/Card";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import Spinner from "../components/ui/Spinner";
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function Register() {
+  const { register } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -12,6 +15,8 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,11 +35,20 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError("");
     if (!validate()) return;
-    // API call added in Commit 10
-    console.log("Register submitted", form);
+
+    setIsSubmitting(true);
+    try {
+      await register(form.name, form.email, form.password);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setApiError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -44,6 +58,13 @@ export default function Register() {
           title="Create your account"
           subtitle="Start getting AI-powered resume feedback in minutes."
         />
+
+        {apiError && (
+          <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg mb-4">
+            <AlertCircle size={16} /> {apiError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
@@ -126,8 +147,8 @@ export default function Register() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" size="lg">
-            Create Account
+          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? <Spinner size={18} /> : "Create Account"}
           </Button>
 
           <p className="text-center text-sm text-gray-500">
