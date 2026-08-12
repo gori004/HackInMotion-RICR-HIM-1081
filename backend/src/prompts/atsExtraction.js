@@ -42,9 +42,21 @@ Return ONLY valid JSON:
   "weakKeywords": string[]
 }
 `;
+const BULLET_SUGGESTION_SYSTEM_PROMPT = `
+You are a resume writing assistant.
+Given missingKeywords and the candidate's existing experience, generate 3-5 rewritten
+resume bullet points that naturally incorporate the missing keywords, using strong
+action verbs and quantifiable impact where possible.
+
+Return ONLY valid JSON:
+{
+  "suggestedBullets": string[]
+}
+`;
 
 module.exports = {
   ATS_SYSTEM_PROMPT,
   MATCH_SCORE_SYSTEM_PROMPT,
   KEYWORD_GAP_SYSTEM_PROMPT,
+  BULLET_SUGGESTION_SYSTEM_PROMPT,
 };
