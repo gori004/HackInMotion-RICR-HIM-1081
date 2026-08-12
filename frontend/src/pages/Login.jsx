@@ -1,12 +1,17 @@
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import Card, { CardHeader } from "../components/ui/Card";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import Spinner from "../components/ui/Spinner";
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 
 export default function Login() {
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   const validate = () => {
     const newErrors = {};
@@ -21,11 +26,20 @@ export default function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError("");
     if (!validate()) return;
-    // API call added in Commit 10
-    console.log("Login submitted", form);
+
+    setIsSubmitting(true);
+    try {
+      await login(form.email, form.password);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setApiError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -35,6 +49,13 @@ export default function Login() {
           title="Welcome back"
           subtitle="Log in to continue practicing and tracking your progress."
         />
+
+        {apiError && (
+          <div className="flex items-center gap-2 bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg mb-4">
+            <AlertCircle size={16} /> {apiError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
@@ -85,8 +106,8 @@ export default function Login() {
             </a>
           </div>
 
-          <Button type="submit" className="w-full" size="lg">
-            Log In
+          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? <Spinner size={18} /> : "Log In"}
           </Button>
 
           <p className="text-center text-sm text-gray-500">

@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import api from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -15,13 +16,23 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, [token]);
 
-  // Stubbed for now — wired to real API in Commit 10
+  const persistSession = (userData, jwt) => {
+    setUser(userData);
+    setToken(jwt);
+    localStorage.setItem("token", jwt);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+
   const login = async (email, password) => {
-    throw new Error("login() not yet connected to backend");
+    const { data } = await api.post("/auth/login", { email, password });
+    persistSession(data.user, data.token);
+    return data;
   };
 
   const register = async (name, email, password) => {
-    throw new Error("register() not yet connected to backend");
+    const { data } = await api.post("/auth/register", { name, email, password });
+    persistSession(data.user, data.token);
+    return data;
   };
 
   const logout = () => {
@@ -31,17 +42,8 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
   };
 
-  const persistSession = (userData, jwt) => {
-    setUser(userData);
-    setToken(jwt);
-    localStorage.setItem("token", jwt);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
   return (
-    <AuthContext.Provider
-      value={{ user, token, loading, login, register, logout, persistSession }}
-    >
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
