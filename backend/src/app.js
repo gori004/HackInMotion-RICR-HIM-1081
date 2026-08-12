@@ -7,9 +7,13 @@ import resumeRoutes from "./routes/resume.routes.js";
 dotenv.config();
 
 const app = express();
-
-// Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    credentials: true, // Allow cookies or authorization headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  })
+);
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
