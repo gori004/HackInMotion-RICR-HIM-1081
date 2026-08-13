@@ -20,9 +20,10 @@ export default function Navbar() {
             CareerCoach AI
           </a>
 
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
-              
+              <a
                 key={link.label}
                 href={link.href}
                 className="text-gray-600 hover:text-indigo-600 font-medium transition-colors"
@@ -32,6 +33,7 @@ export default function Navbar() {
             ))}
           </div>
 
+          {/* Mobile Menu Button */}
           <button
             className="md:hidden text-gray-700"
             onClick={() => setIsOpen(!isOpen)}
@@ -41,10 +43,11 @@ export default function Navbar() {
           </button>
         </div>
 
+        {/* Mobile Nav Links */}
         {isOpen && (
           <div className="md:hidden pb-4 flex flex-col gap-3">
             {links.map((link) => (
-              
+              <a
                 key={link.label}
                 href={link.href}
                 className="text-gray-600 hover:text-indigo-600 font-medium py-1"

@@ -7,7 +7,6 @@ import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
 import interviewRoutes from "./routes/interview.routes.js";
 import analysisRoutes from "./routes/analysis.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
-import analysisRoutes from './routes/analysis.routes.js';
 
 dotenv.config();
 
@@ -32,7 +31,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/resumes", resumeCrudRoutes);
-app.use("/api/analysis", analysisRoutes); // <-- Mounted Analysis Routes
+app.use("/api/analysis", analysisRoutes);
 app.use("/api/interview", interviewRoutes);
 
 app.use(notFound);
