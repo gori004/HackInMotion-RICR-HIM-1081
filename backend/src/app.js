@@ -6,7 +6,6 @@ import resumeRoutes from "./routes/resume.routes.js";
 import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
 import interviewRoutes from "./routes/interview.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
-import analysisRoutes from './routes/analysis.routes.js';
 
 dotenv.config();
 
