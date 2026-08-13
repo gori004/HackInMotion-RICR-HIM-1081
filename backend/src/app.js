@@ -6,7 +6,10 @@ import resumeRoutes from "./routes/resume.routes.js";
 import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
 import interviewRoutes from "./routes/interview.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
+<<<<<<< HEAD
 import analysisRoutes from './routes/analysis.routes.js';
+=======
+>>>>>>> feat/match-score-gauge
 
 dotenv.config();
 
