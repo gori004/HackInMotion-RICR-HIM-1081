@@ -4,6 +4,7 @@ import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import resumeRoutes from "./routes/resume.routes.js";
 import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
+import interviewRoutes from "./routes/interview.routes.js";
 
 dotenv.config();
 
@@ -20,7 +21,8 @@ app.use(
 );
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
+
+
 
 // Sample Health Check Route
 app.get("/api/health", (req, res) => {
@@ -31,6 +33,8 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/resumes", resumeCrudRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/interview", interviewRoutes);
 
 
 // 404 handler (Must be placed AFTER all valid routes)

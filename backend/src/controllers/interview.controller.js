@@ -44,3 +44,20 @@ export const submitAnswer = async (req, res, next) => {
     next(err);
   }
 };
+
+export const completeInterview = async (req, res, next) => {
+  try {
+    const { sessionId, overallSummary } = req.body;
+
+    const session = await InterviewSession.findOne({ _id: sessionId, user: req.user._id });
+    if (!session) return res.status(404).json({ message: "Interview session not found." });
+
+    session.status = "completed";
+    if (overallSummary) session.overallSummary = overallSummary;
+
+    await session.save();
+    res.status(200).json(session);
+  } catch (err) {
+    next(err);
+  }
+};
