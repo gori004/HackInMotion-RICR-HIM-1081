@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import resumeRoutes from "./routes/resume.routes.js";
+import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ app.get("/api/health", (req, res) => {
 // API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
+app.use("/api/resumes", resumeCrudRoutes);
+
 
 // 404 handler (Must be placed AFTER all valid routes)
 app.use((req, res) => {
