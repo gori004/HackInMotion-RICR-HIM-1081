@@ -1,4 +1,6 @@
-const JD_SYSTEM_PROMPT = `
+// backend/src/prompts/jdSkillCategorization.js
+
+export const JD_SYSTEM_PROMPT = `
 You are a job description analysis engine.
 Given a job description, categorize the requirements into:
 - mustHaveSkills: non-negotiable required skills
@@ -16,4 +18,6 @@ Return ONLY valid JSON in this shape:
 No explanation, no markdown, no extra text.
 `;
 
-module.exports = { JD_SYSTEM_PROMPT };
+export default {
+  JD_SYSTEM_PROMPT,
+};
