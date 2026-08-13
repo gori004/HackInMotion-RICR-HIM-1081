@@ -30,7 +30,6 @@ module.exports = {
   generateInterviewQuestions,
   generateSplitInterviewQuestions,
 };
-
 async function generateInterviewQuestions(resumeData, jdData) {
   const response = await grokClient.chat.completions.create({
     model: "grok-2-latest",
