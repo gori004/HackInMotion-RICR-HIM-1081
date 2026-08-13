@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js";
 import resumeRoutes from "./routes/resume.routes.js";
 import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
 import interviewRoutes from "./routes/interview.routes.js";
+import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
 
 dotenv.config();
 
@@ -37,18 +38,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/interview", interviewRoutes);
 
 
-// 404 handler (Must be placed AFTER all valid routes)
-app.use((req, res) => {
-  res.status(404).json({ message: "Route not found." });
-});
-
-// Global error handler — converts thrown errors to JSON instead of HTML
-app.use((err, req, res, next) => {
-  console.error("[Global Error Handler]", err.message);
-  res
-    .status(err.status || 500)
-    .json({ message: err.message || "Internal server error." });
-});
+app.use(notFound);
+app.use(errorHandler);
 
 // Export app for server.js (or test suites like Supertest)
 export default app;
