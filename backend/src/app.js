@@ -10,7 +10,7 @@ import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js"
 dotenv.config();
 
 const app = express();
-const analysisRoutes = require("./routes/analysis");
+
 
 // Middleware
 app.use(
