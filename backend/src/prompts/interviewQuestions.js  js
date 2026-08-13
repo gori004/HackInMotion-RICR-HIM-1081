@@ -1,16 +1,19 @@
-const QUESTION_GEN_SYSTEM_PROMPT = `
-You are an expert technical interviewer.
-Given a candidate's resume data and a job description's requirements (as JSON),
-generate exactly 5 interview questions tailored to the candidate's actual experience
-and the role's requirements. Questions should probe real depth, not generic trivia.
+const TECHNICAL_QUESTION_PROMPT = `
+You are a technical interviewer.
+Given resume and JD data, generate exactly 3 technical questions that test
+hands-on knowledge of the candidate's listed skills and the role's must-have skills.
 
 Return ONLY valid JSON:
-{
-  "questions": [
-    { "id": number, "question": string, "focusArea": string }
-  ]
-}
-No explanation, no markdown.
+{ "technicalQuestions": [{ "id": number, "question": string, "skillTested": string }] }
 `;
 
-module.exports = { QUESTION_GEN_SYSTEM_PROMPT };
+const BEHAVIORAL_QUESTION_PROMPT = `
+You are a behavioral interviewer.
+Given resume and JD data, generate exactly 2 behavioral questions (STAR-style)
+relevant to the seniority level and responsibilities of the role.
+
+Return ONLY valid JSON:
+{ "behavioralQuestions": [{ "id": number, "question": string, "competency": string }] }
+`;
+
+module.exports = { QUESTION_GEN_SYSTEM_PROMPT, TECHNICAL_QUESTION_PROMPT, BEHAVIORAL_QUESTION_PROMPT };
