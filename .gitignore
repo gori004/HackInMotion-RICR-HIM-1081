@@ -3,6 +3,7 @@ node_modules/
 backend/.env
 frontend/.env
 
+
 # Environment files & secrets
 .env
 .env.local
