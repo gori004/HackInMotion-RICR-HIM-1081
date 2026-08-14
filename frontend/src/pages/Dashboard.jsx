@@ -55,13 +55,13 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10">
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10">
           <StatCard
             icon={FileText}
             label="Resumes analyzed"
@@ -94,7 +94,7 @@ export default function Dashboard() {
         <ScoreTrendChart data={trendData} />
 
         {/* History Lists Side-by-Side */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <AnalysisHistoryList
             analyses={analyses}
             onSelect={(item) => console.log("Selected analysis:", item)}
