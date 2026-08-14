@@ -47,7 +47,7 @@ export default function InterviewSetup({ onStart }) {
 
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">Target role</label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-3">
           {ROLES.map((r) => {
             const Icon = r.icon;
             const selected = role === r.id;
@@ -90,7 +90,7 @@ export default function InterviewSetup({ onStart }) {
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-4">
+      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
           <select
