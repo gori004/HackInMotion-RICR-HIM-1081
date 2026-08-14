@@ -1,46 +1,43 @@
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import express from "express";
+import cookieParser from "cookie-parser"; // 1. Import cookie-parser
+
 import authRoutes from "./routes/auth.routes.js";
 import resumeRoutes from "./routes/resume.routes.js";
-import resumeCrudRoutes from "./routes/resumeCrud.routes.js";
+import analysisRoutes from "./routes/analysis.routes.js";
 import interviewRoutes from "./routes/interview.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
-import analysisRoutes from './routes/analysis.routes.js';
 
 dotenv.config();
 
 const app = express();
 
-
-// Middleware
+// 2. Enable CORS with credentials
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true, // Allow cookies or authorization headers
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  }),
+    credentials: true, // Required for cookies!
+  })
 );
+
 app.use(express.json());
+app.use(cookieParser()); // 3. Use cookie-parser middleware
 
-
-
-
-// Sample Health Check Route
+// Health Check Route
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Backend is initialized in app.js" });
 });
 
-// API Routes
+// Mounted API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
-app.use("/api/resumes", resumeCrudRoutes);
-app.use("/api/auth", authRoutes);
+app.use("/api/resumes", resumeRoutes);
+app.use("/api/analysis", analysisRoutes);
 app.use("/api/interview", interviewRoutes);
 
-
+// Error Handling
 app.use(notFound);
 app.use(errorHandler);
 
-// Export app for server.js (or test suites like Supertest)
 export default app;

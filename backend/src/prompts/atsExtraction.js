@@ -1,4 +1,4 @@
-const ATS_SYSTEM_PROMPT = `
+export const ATS_SYSTEM_PROMPT = `
 You are an ATS (Applicant Tracking System) simulation engine.
 Given a resume's raw text, extract:
 - all hard skills (tools, languages, frameworks, certifications)
@@ -15,7 +15,8 @@ Return ONLY valid JSON in this shape:
 }
 No explanation, no markdown, no extra text.
 `;
-const MATCH_SCORE_SYSTEM_PROMPT = `
+
+export const MATCH_SCORE_SYSTEM_PROMPT = `
 You are an ATS match scoring engine.
 Given extracted resume data and job description data (as JSON), compute a match score.
 
@@ -30,7 +31,8 @@ Return ONLY valid JSON:
 }
 No explanation, no markdown.
 `;
-const KEYWORD_GAP_SYSTEM_PROMPT = `
+
+export const KEYWORD_GAP_SYSTEM_PROMPT = `
 You are an ATS keyword gap analyzer.
 Given resumeData and jdData JSON, identify:
 - missingKeywords: must-have JD skills absent from resume
@@ -42,7 +44,8 @@ Return ONLY valid JSON:
   "weakKeywords": string[]
 }
 `;
-const BULLET_SUGGESTION_SYSTEM_PROMPT = `
+
+export const BULLET_SUGGESTION_SYSTEM_PROMPT = `
 You are a resume writing assistant.
 Given missingKeywords and the candidate's existing experience, generate 3-5 rewritten
 resume bullet points that naturally incorporate the missing keywords, using strong
@@ -54,7 +57,8 @@ Return ONLY valid JSON:
 }
 `;
 
-module.exports = {
+// Default export included for backward compatibility if needed
+export default {
   ATS_SYSTEM_PROMPT,
   MATCH_SCORE_SYSTEM_PROMPT,
   KEYWORD_GAP_SYSTEM_PROMPT,

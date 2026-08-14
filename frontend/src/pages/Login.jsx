@@ -5,7 +5,7 @@ import Card, { CardHeader } from "../components/ui/Card";
 import Spinner from "../components/ui/Spinner";
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
 
-export default function Login() {
+export default function Login({ onLoginSuccess, onSwitchToRegister }) {
   const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -33,18 +33,20 @@ export default function Login() {
 
     setIsSubmitting(true);
     try {
-      await login(form.email, form.password);
-      window.location.href = "/dashboard";
+      await login({ email: form.email, password: form.password });
+      if (onLoginSuccess) {
+        onLoginSuccess();
+      }
     } catch (err) {
-      setApiError(err.message);
+      setApiError(err.response?.data?.message || err.message || "Failed to log in");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-[75vh] flex items-center justify-center px-4">
+      <Card className="w-full max-w-md p-6">
         <CardHeader
           title="Welcome back"
           subtitle="Log in to continue practicing and tracking your progress."
@@ -100,21 +102,19 @@ export default function Login() {
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
-          <div className="flex justify-end">
-            <a href="/forgot-password" className="text-sm text-indigo-600 hover:underline">
-              Forgot password?
-            </a>
-          </div>
-
-          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+          <Button type="submit" className="w-full mt-2" size="lg" disabled={isSubmitting}>
             {isSubmitting ? <Spinner size={18} /> : "Log In"}
           </Button>
 
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-gray-500 pt-2">
             Don't have an account?{" "}
-            <a href="/register" className="text-indigo-600 font-medium hover:underline">
+            <button
+              type="button"
+              onClick={onSwitchToRegister}
+              className="text-indigo-600 font-medium hover:underline focus:outline-none"
+            >
               Sign up
-            </a>
+            </button>
           </p>
         </form>
       </Card>

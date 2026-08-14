@@ -1,56 +1,59 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import api from "../services/api";
 
-const AuthContext = createContext(null);
+const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+    let isMounted = true;
+
+    const checkAuth = async () => {
+      try {
+        const { data } = await api.get("/auth/me");
+        if (isMounted) {
+          setUser(data.user);
+        }
+      } catch (err) {
+        // 401 simply means guest visitor / not logged in
+        if (isMounted) {
+          setUser(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const login = async (credentials) => {
+    const { data } = await api.post("/auth/login", credentials);
+    setUser(data.user);
+    return data;
+  };
+
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setUser(null);
     }
-    setLoading(false);
-  }, [token]);
-
-  const persistSession = (userData, jwt) => {
-    setUser(userData);
-    setToken(jwt);
-    localStorage.setItem("token", jwt);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
-  const login = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    persistSession(data.user, data.token);
-    return data;
-  };
-
-  const register = async (name, email, password) => {
-    const { data } = await api.post("/auth/register", { name, email, password });
-    persistSession(data.user, data.token);
-    return data;
-  };
-
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
-      {children}
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
-}
+export const useAuth = () => useContext(AuthContext);

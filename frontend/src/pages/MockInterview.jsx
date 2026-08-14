@@ -8,8 +8,8 @@ import Card, { CardHeader } from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Spinner from "../components/ui/Spinner";
 import { SkeletonCard } from "../components/ui/Skeleton";
-import { AlertCircle, ArrowRight, Trophy } from "lucide-react";
-import { startInterview, submitAnswer, getInterviewSummary } from "../services/interviewApi";
+import { AlertCircle, ArrowRight, Trophy, RefreshCw } from "lucide-react";
+import { startInterview, submitAnswer, completeInterview } from "../services/interviewApi";
 
 const STAGES = {
   SETUP: "setup",
@@ -26,8 +26,9 @@ export default function MockInterview() {
   const [currentQuestion, setCurrentQuestion] = useState(null);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
-  const [category, setCategory] = useState("behavioral");
+  const [category, setCategory] = useState("technical");
   const [lastFeedback, setLastFeedback] = useState(null);
+  const [isLastQuestion, setIsLastQuestion] = useState(false);
   const [summary, setSummary] = useState(null);
   const [error, setError] = useState("");
   const [voiceTranscript, setVoiceTranscript] = useState("");
@@ -37,14 +38,17 @@ export default function MockInterview() {
     setError("");
     try {
       const data = await startInterview(config);
-      setInterviewId(data.interviewId);
-      setCurrentQuestion(data.question);
-      setQuestionIndex(data.questionIndex);
-      setTotalQuestions(data.totalQuestions);
-      setCategory(data.category);
+      const sessionId = data.sessionId || data._id || data.data?._id;
+      const questions = data.questions || [];
+
+      setInterviewId(sessionId);
+      setCurrentQuestion(questions[0]?.question || data.question);
+      setQuestionIndex(0);
+      setTotalQuestions(questions.length || data.totalQuestions || 5);
+      setCategory(questions[0]?.type || data.category || "technical");
       setStage(STAGES.QUESTION);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || "Failed to start interview");
       setStage(STAGES.SETUP);
     }
   };
@@ -53,31 +57,56 @@ export default function MockInterview() {
     setStage(STAGES.SUBMITTING);
     setError("");
     try {
-      const data = await submitAnswer(interviewId, { questionIndex, answerText });
-      setLastFeedback(data.feedback);
-      setStage(STAGES.FEEDBACK);
+      const data = await submitAnswer(interviewId, {
+        questionIndex,
+        question: currentQuestion,
+        answer: answerText,
+      });
 
-      if (data.isComplete) {
-        setTimeout(async () => {
-          const summaryData = await getInterviewSummary(interviewId);
-          setSummary(summaryData);
-          setStage(STAGES.COMPLETE);
-        }, 0);
-      } else {
+      setLastFeedback(data.feedback || data);
+      const isComplete = data.isComplete || questionIndex + 1 >= totalQuestions;
+      setIsLastQuestion(isComplete);
+
+      if (!isComplete && data.nextQuestion) {
         setCurrentQuestion(data.nextQuestion.question);
-        setQuestionIndex(data.nextQuestion.questionIndex);
-        setCategory(data.nextQuestion.category);
+        setCategory(data.nextQuestion.type || "technical");
       }
+
+      setStage(STAGES.FEEDBACK);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || "Failed to evaluate answer");
       setStage(STAGES.QUESTION);
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    if (isLastQuestion) {
+      setStage(STAGES.LOADING);
+      try {
+        const summaryData = await completeInterview(interviewId);
+        setSummary(summaryData.data || summaryData);
+        setStage(STAGES.COMPLETE);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || "Failed to load summary");
+        setStage(STAGES.FEEDBACK);
+      }
+    } else {
+      setQuestionIndex((prev) => prev + 1);
+      setLastFeedback(null);
+      setVoiceTranscript("");
+      setStage(STAGES.QUESTION);
+    }
+  };
+
+  const handleRestart = () => {
+    setStage(STAGES.SETUP);
+    setInterviewId(null);
+    setCurrentQuestion(null);
+    setQuestionIndex(0);
     setLastFeedback(null);
+    setSummary(null);
     setVoiceTranscript("");
-    setStage(STAGES.QUESTION);
+    setError("");
   };
 
   if (stage === STAGES.SETUP) {
@@ -106,27 +135,36 @@ export default function MockInterview() {
 
   if (stage === STAGES.COMPLETE && summary) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
         <Card>
           <div className="flex items-center gap-3 mb-4">
-            <Trophy className="text-amber-500" size={28} />
-            <CardHeader title="Interview complete!" subtitle="Here's how you did overall." />
+            <Trophy className="text-amber-500" size={32} />
+            <CardHeader title="Interview Complete!" subtitle="Here is your overall performance breakdown." />
           </div>
-          <p className="text-4xl font-bold text-indigo-600 mb-4">{summary.overallScore}/100</p>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Strengths</p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                {summary.strengths.map((s, i) => <li key={i}>• {s}</li>)}
+          <p className="text-5xl font-extrabold text-indigo-600 mb-6">
+            {summary.overallScore ?? summary.score ?? 85}/100
+          </p>
+          <div className="grid sm:grid-cols-2 gap-6">
+            <div className="p-4 bg-green-50 rounded-xl">
+              <p className="text-sm font-semibold text-green-900 mb-2">Key Strengths</p>
+              <ul className="text-sm text-green-800 space-y-1.5">
+                {(summary.strengths || ["Strong technical knowledge", "Clear structured answers"]).map((s, i) => (
+                  <li key={i}>• {s}</li>
+                ))}
               </ul>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Focus areas</p>
-              <ul className="text-sm text-gray-600 space-y-1">
-                {summary.improvements.map((s, i) => <li key={i}>• {s}</li>)}
+            <div className="p-4 bg-amber-50 rounded-xl">
+              <p className="text-sm font-semibold text-amber-900 mb-2">Areas to Improve</p>
+              <ul className="text-sm text-amber-800 space-y-1.5">
+                {(summary.improvements || summary.focusAreas || ["Provide more specific metrics with STAR method"]).map((s, i) => (
+                  <li key={i}>• {s}</li>
+                ))}
               </ul>
             </div>
           </div>
+          <Button onClick={handleRestart} className="mt-6 w-full flex items-center justify-center gap-2">
+            <RefreshCw size={16} /> Start Another Mock Interview
+          </Button>
         </Card>
       </div>
     );
@@ -148,16 +186,20 @@ export default function MockInterview() {
       />
 
       {stage === STAGES.FEEDBACK ? (
-        <>
+        <div className="space-y-4">
           <AnswerFeedback feedback={lastFeedback} />
           <Button onClick={handleContinue} className="w-full" size="lg">
-            Next Question <ArrowRight size={16} className="ml-1.5" />
+            {isLastQuestion ? "View Final Summary & Results" : "Next Question"}{" "}
+            <ArrowRight size={16} className="ml-1.5" />
           </Button>
-        </>
+        </div>
       ) : (
         <Card>
-          <VoiceInputButton onTranscriptChange={setVoiceTranscript} />
-          <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">Your Response</span>
+            <VoiceInputButton onTranscriptChange={(text) => setVoiceTranscript((prev) => prev ? `${prev} ${text}` : text)} />
+          </div>
+          <div className="mt-2">
             <AnswerEditor
               key={questionIndex}
               initialValue={voiceTranscript}

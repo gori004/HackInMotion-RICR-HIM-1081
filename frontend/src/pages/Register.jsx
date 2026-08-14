@@ -1,12 +1,13 @@
 import { useState } from "react";
+import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import Card, { CardHeader } from "../components/ui/Card";
 import Spinner from "../components/ui/Spinner";
 import { Mail, Lock, User, Eye, EyeOff, AlertCircle } from "lucide-react";
 
-export default function Register() {
-  const { register } = useAuth();
+export default function Register({ onRegisterSuccess, onSwitchToLogin }) {
+  const { login } = useAuth();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -42,18 +43,26 @@ export default function Register() {
 
     setIsSubmitting(true);
     try {
-      await register(form.name, form.email, form.password);
-      window.location.href = "/dashboard";
+      await api.post("/auth/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      });
+
+      // Auto login or transition to dashboard
+      if (onRegisterSuccess) {
+        onRegisterSuccess();
+      }
     } catch (err) {
-      setApiError(err.message);
+      setApiError(err.response?.data?.message || err.message || "Failed to create account");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-[75vh] flex items-center justify-center px-4 py-8">
+      <Card className="w-full max-w-md p-6">
         <CardHeader
           title="Create your account"
           subtitle="Start getting AI-powered resume feedback in minutes."
@@ -147,15 +156,19 @@ export default function Register() {
             )}
           </div>
 
-          <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+          <Button type="submit" className="w-full mt-2" size="lg" disabled={isSubmitting}>
             {isSubmitting ? <Spinner size={18} /> : "Create Account"}
           </Button>
 
-          <p className="text-center text-sm text-gray-500">
+          <p className="text-center text-sm text-gray-500 pt-2">
             Already have an account?{" "}
-            <a href="/login" className="text-indigo-600 font-medium hover:underline">
+            <button
+              type="button"
+              onClick={onSwitchToLogin}
+              className="text-indigo-600 font-medium hover:underline focus:outline-none"
+            >
               Log in
-            </a>
+            </button>
           </p>
         </form>
       </Card>
