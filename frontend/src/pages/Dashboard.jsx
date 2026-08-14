@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { FileText, Mic, TrendingUp, Target } from "lucide-react";
 import StatCard from "../components/dashboard/StatCard";
 import ScoreTrendChart from "../components/dashboard/ScoreTrendChart";
-import Card, { CardHeader } from "../components/ui/Card";
+import AnalysisHistoryList from "../components/dashboard/AnalysisHistoryList";
+import InterviewHistoryList from "../components/dashboard/InterviewHistoryList";
 import { SkeletonCard } from "../components/ui/Skeleton";
 import { useAuth } from "../context/AuthContext";
 
@@ -16,6 +17,9 @@ export default function Dashboard() {
     avgInterviewScore: 0,
   });
 
+  const [analyses, setAnalyses] = useState([]);
+  const [sessions, setSessions] = useState([]);
+
   // Mock trend data for Commit 22 visual display
   const trendData = [
     { date: "Aug 1", matchScore: 55, interviewScore: 60 },
@@ -24,7 +28,7 @@ export default function Dashboard() {
   ];
 
   useEffect(() => {
-    // Stats fetched from backend once history endpoints are wired (Commit 23/24)
+    // Stats and history fetched from backend once endpoints are wired
     const timer = setTimeout(() => {
       setStats({
         totalAnalyses: 4,
@@ -32,6 +36,8 @@ export default function Dashboard() {
         avgMatchScore: 68,
         avgInterviewScore: 74,
       });
+      setAnalyses([]);
+      setSessions([]);
       setLoading(false);
     }, 500);
     return () => clearTimeout(timer);
@@ -81,15 +87,21 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      {/* Main Content Grid */}
+      <div className="space-y-6">
         <ScoreTrendChart data={trendData} />
 
-        <Card>
-          <CardHeader title="Recent activity" subtitle="Coming in Commit 23 & 24" />
-          <div className="h-48 flex items-center justify-center text-gray-300 text-sm">
-            History placeholder
-          </div>
-        </Card>
+        {/* History Lists Side-by-Side */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <AnalysisHistoryList
+            analyses={analyses}
+            onSelect={(item) => console.log("Selected analysis:", item)}
+          />
+          <InterviewHistoryList
+            sessions={sessions}
+            onSelect={(session) => console.log("Selected session:", session)}
+          />
+        </div>
       </div>
     </div>
   );
