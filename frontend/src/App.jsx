@@ -59,25 +59,18 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Ingestion Section */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-5">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">1. Upload Resume</h2>
-          <ResumeDropzone onTextExtracted={(text) => setResumeText(text)} />
-        </Card>
+     {/* Ingestion Section */}
+<div className="grid md:grid-cols-2 gap-6">
+  <Card className="p-5">
+    <h2 className="text-lg font-semibold text-gray-800 mb-3">1. Upload Resume</h2>
+    <ResumeDropzone onTextExtracted={(text) => setResumeText(text)} />
+  </Card>
 
-        <Card className="p-5">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">2. Target Job Description</h2>
-          <JobDescriptionInput value={jobDescription} onChange={(e) => setJobDescription(e.target.value)} />
-        </Card>
-      </div>
-
-      <div className="flex justify-center">
-        <Button onClick={handleAnalyze} disabled={loading} size="lg" className="px-8 py-3 text-base">
-          {loading ? <Spinner size={20} className="mr-2" /> : null}
-          {loading ? "Analyzing with Grok AI..." : "Analyze ATS Match Score"}
-        </Button>
-      </div>
+  <Card className="p-5">
+    <h2 className="text-lg font-semibold text-gray-800 mb-3">2. Target Job Description</h2>
+    <JobDescriptionInput value={jobDescription} onChange={(val) => setJobDescription(val)} />
+  </Card>
+</div>
 
       {/* Analysis Output Section */}
       {analysis && (
