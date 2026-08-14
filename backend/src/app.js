@@ -11,12 +11,17 @@ import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js"
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import historyRoutes from "./routes/history.routes.js";
 import { generalLimiter, aiLimiter, authLimiter } from "./middleware/rateLimit.middleware.js";
+import helmet from "helmet";
+
+
 
 
 
 dotenv.config();
 
 const app = express();
+
+app.use(helmet());
 
 // 2. Enable CORS with credentials
 app.use(
