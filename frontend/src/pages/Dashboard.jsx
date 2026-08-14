@@ -4,6 +4,7 @@ import StatCard from "../components/dashboard/StatCard";
 import ScoreTrendChart from "../components/dashboard/ScoreTrendChart";
 import AnalysisHistoryList from "../components/dashboard/AnalysisHistoryList";
 import InterviewHistoryList from "../components/dashboard/InterviewHistoryList";
+import SessionDetailModal from "../components/dashboard/SessionDetailModal";
 import { SkeletonCard } from "../components/ui/Skeleton";
 import { useAuth } from "../context/AuthContext";
 
@@ -19,6 +20,7 @@ export default function Dashboard() {
 
   const [analyses, setAnalyses] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [selectedSession, setSelectedSession] = useState(null);
 
   // Mock trend data for Commit 22 visual display
   const trendData = [
@@ -53,13 +55,13 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10">
           {Array.from({ length: 4 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10">
           <StatCard
             icon={FileText}
             label="Resumes analyzed"
@@ -92,17 +94,24 @@ export default function Dashboard() {
         <ScoreTrendChart data={trendData} />
 
         {/* History Lists Side-by-Side */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           <AnalysisHistoryList
             analyses={analyses}
             onSelect={(item) => console.log("Selected analysis:", item)}
           />
           <InterviewHistoryList
             sessions={sessions}
-            onSelect={(session) => console.log("Selected session:", session)}
+            onSelect={setSelectedSession}
           />
         </div>
       </div>
+
+      {/* Interview Session Detail Modal */}
+      <SessionDetailModal
+        session={selectedSession}
+        isOpen={!!selectedSession}
+        onClose={() => setSelectedSession(null)}
+      />
     </div>
   );
 }
