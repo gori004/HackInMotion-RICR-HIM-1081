@@ -23,11 +23,21 @@ const app = express();
 
 app.use(helmet());
 
-// 2. Enable CORS with credentials
+const allowedOrigins = [
+  "http://localhost:5173", // local dev
+  process.env.CLIENT_URL,  // deployed frontend, set in .env / Render dashboard
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true, // Required for cookies!
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
