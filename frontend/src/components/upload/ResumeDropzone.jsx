@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
-import { UploadCloud, FileText, XCircle } from "lucide-react";
+import { UploadCloud, FileText, XCircle, Loader2 } from "lucide-react";
+import api from "../../services/api";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -8,10 +9,11 @@ const ACCEPTED_TYPES = [
 const ACCEPTED_EXTENSIONS = [".pdf", ".docx"];
 const MAX_SIZE_MB = 5;
 
-export default function ResumeDropzone({ onFileSelect }) {
+export default function ResumeDropzone({ onTextExtracted }) {
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const inputRef = useRef(null);
 
   const validateFile = (selected) => {
@@ -25,16 +27,36 @@ export default function ResumeDropzone({ onFileSelect }) {
     return "";
   };
 
-  const handleFile = (selected) => {
+  const handleFile = async (selected) => {
     const validationError = validateFile(selected);
     if (validationError) {
       setError(validationError);
       setFile(null);
       return;
     }
+
     setError("");
     setFile(selected);
-    onFileSelect?.(selected);
+    setIsParsing(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("resume", selected);
+
+      // Call backend upload / parse endpoint
+      const { data } = await api.post("/resumes/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const extractedText = data.parsedText || data.rawText || "";
+      if (onTextExtracted) {
+        onTextExtracted(extractedText);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to extract text from resume");
+    } finally {
+      setIsParsing(false);
+    }
   };
 
   const handleDrop = (e) => {
@@ -49,9 +71,11 @@ export default function ResumeDropzone({ onFileSelect }) {
     if (selected) handleFile(selected);
   };
 
-  const clearFile = () => {
+  const clearFile = (e) => {
+    e.stopPropagation();
     setFile(null);
     setError("");
+    if (onTextExtracted) onTextExtracted("");
     if (inputRef.current) inputRef.current.value = "";
   };
 
@@ -95,13 +119,19 @@ export default function ResumeDropzone({ onFileSelect }) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 text-left">
-              <FileText className="text-indigo-600" size={22} />
+              {isParsing ? (
+                <Loader2 className="text-indigo-600 animate-spin" size={22} />
+              ) : (
+                <FileText className="text-indigo-600" size={22} />
+              )}
               <div>
                 <p className="text-sm font-medium text-gray-800">{file.name}</p>
-                <p className="text-xs text-gray-500">{formatSize(file.size)}</p>
+                <p className="text-xs text-gray-500">
+                  {isParsing ? "Extracting text..." : formatSize(file.size)}
+                </p>
               </div>
             </div>
-            <button onClick={clearFile} aria-label="Remove file">
+            <button type="button" onClick={clearFile} aria-label="Remove file">
               <XCircle size={20} className="text-gray-400 hover:text-red-500" />
             </button>
           </div>
