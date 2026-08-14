@@ -10,6 +10,7 @@ import Spinner from "../components/ui/Spinner";
 import { SkeletonCard } from "../components/ui/Skeleton";
 import { AlertCircle, ArrowRight, Trophy, RefreshCw } from "lucide-react";
 import { startInterview, submitAnswer, completeInterview } from "../services/interviewApi";
+import { notifyError } from "../utils/toast";
 
 const STAGES = {
   SETUP: "setup",
@@ -48,7 +49,9 @@ export default function MockInterview() {
       setCategory(questions[0]?.type || data.category || "technical");
       setStage(STAGES.QUESTION);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to start interview");
+      const errorMsg = err.response?.data?.message || err.message || "Failed to start interview";
+      setError(errorMsg);
+      notifyError(errorMsg);
       setStage(STAGES.SETUP);
     }
   };
@@ -74,7 +77,9 @@ export default function MockInterview() {
 
       setStage(STAGES.FEEDBACK);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to evaluate answer");
+      const errorMsg = err.response?.data?.message || err.message || "Failed to evaluate answer";
+      setError(errorMsg);
+      notifyError(errorMsg);
       setStage(STAGES.QUESTION);
     }
   };
@@ -87,7 +92,9 @@ export default function MockInterview() {
         setSummary(summaryData.data || summaryData);
         setStage(STAGES.COMPLETE);
       } catch (err) {
-        setError(err.response?.data?.message || err.message || "Failed to load summary");
+        const errorMsg = err.response?.data?.message || err.message || "Failed to load summary";
+        setError(errorMsg);
+        notifyError(errorMsg);
         setStage(STAGES.FEEDBACK);
       }
     } else {

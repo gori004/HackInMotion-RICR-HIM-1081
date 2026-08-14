@@ -4,6 +4,7 @@ import Button from "../components/ui/Button";
 import Card, { CardHeader } from "../components/ui/Card";
 import Spinner from "../components/ui/Spinner";
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { notifyError, notifySuccess } from "../utils/toast";
 
 export default function Login({ onLoginSuccess, onSwitchToRegister }) {
   const { login } = useAuth();
@@ -34,11 +35,14 @@ export default function Login({ onLoginSuccess, onSwitchToRegister }) {
     setIsSubmitting(true);
     try {
       await login({ email: form.email, password: form.password });
+      notifySuccess("Welcome back!");
       if (onLoginSuccess) {
         onLoginSuccess();
       }
     } catch (err) {
-      setApiError(err.response?.data?.message || err.message || "Failed to log in");
+      const errorMsg = err.response?.data?.message || err.message || "Failed to log in";
+      setApiError(errorMsg);
+      notifyError(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
