@@ -10,6 +10,8 @@ import interviewRoutes from "./routes/interview.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import historyRoutes from "./routes/history.routes.js";
+import { generalLimiter, aiLimiter, authLimiter } from "./middleware/rateLimit.middleware.js";
+
 
 
 dotenv.config();
@@ -27,17 +29,21 @@ app.use(
 app.use(express.json());
 app.use(cookieParser()); // 3. Use cookie-parser middleware
 
+app.use("/api", generalLimiter); // applies to everything under /api
+
+
 // Health Check Route
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Backend is initialized in app.js" });
 });
 
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/analysis", aiLimiter, analysisRoutes);
+app.use("/api/interview", aiLimiter, interviewRoutes);
+
 // Mounted API Routes
-app.use("/api/auth", authRoutes);
 app.use("/api/resume", resumeRoutes);
 app.use("/api/resumes", resumeRoutes);
-app.use("/api/analysis", analysisRoutes);
-app.use("/api/interview", interviewRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/history", historyRoutes);
 
