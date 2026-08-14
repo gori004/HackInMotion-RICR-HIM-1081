@@ -14,3 +14,14 @@ export const getAnalysisHistory = async (req, res, next) => {
   }
 };
 
+export const getInterviewHistory = async (req, res, next) => {
+  try {
+    const sessions = await InterviewSession.find({ user: req.user._id })
+      .select("-questions.feedback.comment") // keep list view light; full detail via a future :id route
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(sessions);
+  } catch (err) {
+    next(err);
+  }
+};

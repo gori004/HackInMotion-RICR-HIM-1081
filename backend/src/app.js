@@ -9,6 +9,7 @@ import analysisRoutes from "./routes/analysis.routes.js";
 import interviewRoutes from "./routes/interview.routes.js";
 import { notFound, errorHandler } from "./middleware/errorHandler.middleware.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import historyRoutes from "./routes/history.routes.js";
 
 
 dotenv.config();
@@ -38,6 +39,8 @@ app.use("/api/resumes", resumeRoutes);
 app.use("/api/analysis", analysisRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/history", historyRoutes);
+
 
 // Error Handling
 app.use(notFound);
