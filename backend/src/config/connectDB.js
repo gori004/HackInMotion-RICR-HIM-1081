@@ -1,39 +1,23 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-const MONGO_URI = process.env.MONGO_URI;
-
-if (!MONGO_URI) {
-  throw new Error("Missing MONGO_URI in your .env file.");
-}
-
-let isConnected = false;
-
-export const connectDB = async () => {
-  if (isConnected) {
-    console.log("[db] Using existing MongoDB connection.");
-    return;
-  }
-
+const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(MONGO_URI, {
-      // Modern mongoose (6+) doesn't need useNewUrlParser/useUnifiedTopology,
-      // but keeping options object here in case you add more later.
-    });
-
-    isConnected = conn.connections[0].readyState === 1;
+    const conn = await mongoose.connect(process.env.MONGO_URI);
     console.log(`[db] MongoDB connected: ${conn.connection.host}`);
+
+    // Log index status for key collections — helps catch missing indexes before deploy
+    const collections = ["users", "resumes", "analyses", "interviewsessions"];
+    for (const name of collections) {
+      const exists = await conn.connection.db.listCollections({ name }).hasNext();
+      if (exists) {
+        const indexes = await conn.connection.db.collection(name).indexes();
+        console.log(`[db] Indexes on '${name}':`, indexes.map((i) => i.name).join(", "));
+      }
+    }
   } catch (err) {
     console.error("[db] MongoDB connection failed:", err.message);
     process.exit(1);
   }
 };
-
-mongoose.connection.on("disconnected", () => {
-  console.warn("[db] MongoDB disconnected.");
-  isConnected = false;
-});
 
 export default connectDB;
