@@ -1,54 +1,97 @@
-import User from "../models/user.model.js";
+import User from "../models/User.model.js";
 import { generateToken } from "../utils/generateToken.js";
 
-export const registerUser = async (req, res) => {
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
+
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Name, email, and password are required." });
+    // 1. Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists with this email" });
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-    if (existingUser) {
-      return res.status(409).json({ message: "An account with this email already exists." });
-    }
-
-    const user = await User.create({ name, email, password });
-
-    return res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
+    // 2. Create new user (pre-save hook hashes password)
+    const user = await User.create({
+      name,
+      email,
+      password,
     });
-  } catch (err) {
-    console.error("[registerUser]", err.message);
-    return res.status(500).json({ message: "Registration failed. Please try again." });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid user data received" });
+    }
+
+    // 3. Generate JWT Token
+    const token = generateToken(user._id);
+
+    // 4. Set HttpOnly Cookie
+    res.cookie("token", token, cookieOptions);
+
+    // 5. Response
+    res.status(201).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+      token,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required." });
+    // 1. Must use .select("+password") because select: false is set in schema
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ message: "Invalid email or password." });
+    // 2. Compare password using the schema method
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    return res.status(200).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
+    // 3. Generate JWT Token
+    const token = generateToken(user._id);
+
+    // 4. Set HttpOnly Cookie
+    res.cookie("token", token, cookieOptions);
+
+    // 5. Response
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+      token,
     });
-  } catch (err) {
-    console.error("[loginUser]", err.message);
-    return res.status(500).json({ message: "Login failed. Please try again." });
+  } catch (error) {
+    next(error);
   }
+};
+
+export const logoutUser = async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+  res.status(200).json({ success: true, message: "Logged out successfully" });
 };
